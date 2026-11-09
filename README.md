@@ -1,183 +1,133 @@
-# Salarite Virtual HR
+# Salarite Virtual HR Dashboard
 
-A demo applicant-tracking dashboard for employers and Virtual HR users. Employers assign tasks and track progress; HR users update tasks and schedule interviews. The frontend polls the API every three seconds for updates.
+A small ATS-style dashboard where an **employer assigns tasks to a Virtual HR**, the HR works on them and **schedules interviews** (voice, video or chat), and the employer follows progress **live**.
 
-**Stack:** React 18, Vite, FastAPI, SQLAlchemy, SQLite  
-**Demo:** https://salarite-hr.onrender.com
+Built for the Salarite IT internship assignment with **FastAPI + SQLite** (backend) and **React** (frontend).
 
-## Features
+## Links
 
-- Role-based employer and HR dashboards
-- Task assignment, editing, progress notes, and status tracking
-- Interview scheduling and status updates
-- Automatic dashboard refresh and notifications
-- Login and account registration
+| | |
+|---|---|
+| **Live demo** | https://salarite-hr-app.onrender.com |
+| **Source code** | https://github.com/deepaksharma02312-a11y/Salarite-hr |
+| **API docs** | https://salarite-hr.onrender.com/docs |
 
-The voice, video, and chat interview modes are UI/API placeholders; no live calling service is connected.
+> The app is on free hosting. If it has been idle, **the first load can take up to a minute** while the server wakes up. After that it is fast.
 
-## Project layout
+## Test accounts
 
-```text
-backend/
-  main.py                 FastAPI app, CORS, database initialization, demo users
-  database.py             SQLAlchemy engine and sessions
-  models.py               Database models
-  schemas.py              API request and response schemas
-  auth.py                 Password hashing and bearer-token authentication
-  routers/                Authentication, users, tasks, and interviews endpoints
-  requirements.txt        Python dependencies
-frontend/
-  src/
-    api.js                Frontend API client
-    App.jsx               Dashboard
-    components/           Login, task, and interview UI
-  .env.example            Frontend API URL example
-  package.json            Frontend scripts and dependencies
-```
-
-## Requirements
-
-- Python 3.10 or newer
-- Node.js 18 or newer, with npm
-
-## Run locally
-
-Run the backend and frontend in separate terminals.
-
-### 1. Start the backend
-
-```powershell
-cd backend
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-uvicorn main:app --reload
-```
-
-If PowerShell blocks virtual-environment activation, use `.\.venv\Scripts\python.exe -m pip install -r requirements.txt` and `.\.venv\Scripts\python.exe -m uvicorn main:app --reload` instead.
-
-On macOS/Linux, use:
-
-```bash
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --reload
-```
-
-The API runs at `http://localhost:8000`. Interactive API documentation is at `http://localhost:8000/docs`.
-
-### 2. Start the frontend
-
-In a second terminal:
-
-```bash
-cd frontend
-npm ci
-npm run dev
-```
-
-Open the Vite URL shown in the terminal (normally `http://localhost:5173`). The frontend defaults to `http://localhost:8000` for its API. To use a different backend URL, create `frontend/.env` from `frontend/.env.example` and set:
-
-```dotenv
-VITE_API_URL=http://localhost:8000
-```
-
-Restart the Vite dev server after changing environment variables.
-
-## Demo accounts
-
-The backend creates these demo accounts at startup:
+Sample tasks and interviews are loaded automatically, so every account has something to look at.
 
 | Role | Username | Password |
 |---|---|---|
 | Employer | `employer` | `employer123` |
 | Virtual HR | `hr` | `hr123456` |
-| Employer | `employer2` | `employer456` |
-| Virtual HR | `hr2` | `hr234567` |
+| Virtual HR (second) | `hr2` | `hr234567` |
+| Employer (second) | `employer2` | `employer456` |
 
-The frontend login screen provides quick-fill buttons for the first employer and HR accounts.
+You can also create your own account from the login page (**Create an account**). Passwords need at least 8 characters.
 
-> **Demo only:** On every backend startup, the demo accounts are created or reset to these passwords. Do not expose this setup to real users or store real data in a public deployment. The app also allows account registration without email verification and has not been hardened for production use.
+## Two-minute walkthrough
 
-## Deploy to Render
+1. Open the live link in a normal window and log in as **`employer`**. You will see a live task board (Pending, In progress, Completed) and a list of HRs to assign work to.
+2. Assign a new task to `hr` using the **Assign a task** panel.
+3. Open a **private window**, log in as **`hr`**. The new task is there with the employer's name on it.
+4. As HR, open the **⋮ menu** on a task, choose **Move to In progress** and **Add note**.
+5. Switch back to the employer window. The card moves to the new column and shows the HR note within a few seconds, with no refresh.
+6. As HR, **schedule an interview**: pick the employer, date, **start and end time**, and the meeting type. Press **Start** to open the call placeholder.
+7. As the employer, check the interview list, then use **Edit / reassign** on a task to hand it to `hr2`.
 
-Deploy the backend and frontend as **two separate Render services** from the same Git repository. The frontend is a static site; the backend is a web service.
+## What it does
 
-### 1. Deploy the backend web service
+**Employer**
+- Assigns a task to a specific HR chosen from a list
+- Edits a task, or reassigns it to another HR, until it is completed
+- Deletes (cancels) a task
+- Watches a live board and sees every interview scheduled for them
 
-Create a new **Web Service** and configure:
+**Virtual HR**
+- Sees only the tasks assigned to them, labelled with the employer who gave them
+- Moves tasks between Pending, In progress and Completed and leaves progress notes
+- Schedules interviews for a chosen employer with start time, end time and mode
+- Starts a call from the interview card
 
-| Setting | Value |
+**For everyone**
+- Role-based access: users only see and change what belongs to them
+- Auto refresh every 3 seconds, with a **Live** menu to refresh now or pause
+- Notifications, search, and clickable summary cards that filter the board by status
+- Sign up and login with salted password hashing
+
+## Tech stack
+
+| Layer | Choice |
 |---|---|
-| Root Directory | `backend` |
-| Runtime | Python |
-| Build Command | `pip install -r requirements.txt` |
-| Start Command | `uvicorn main:app --host 0.0.0.0 --port $PORT` |
+| Backend | Python, FastAPI, SQLAlchemy |
+| Database | SQLite |
+| Frontend | React 18, Vite, plain CSS |
+| Real-time | Polling every 3 seconds |
+| Hosting | Render (Web Service + Static Site) |
 
-Add these environment variables in the Render service settings:
+## Design decisions
 
-| Name | Value |
-|---|---|
-| `CORS_ORIGINS` | Your frontend origin, for example `https://your-frontend.onrender.com` |
-| `DATABASE_URL` | Optional for a disposable demo; see database persistence below |
+- **Ownership on every record.** A task stores who created it and who it is assigned to, and an interview stores who scheduled it and for which employer. Every endpoint filters by that, so one HR can never read or change another HR's work.
+- **Polling instead of WebSockets.** Simple, reliable on free hosting, and fast enough for a task board. WebSockets are the obvious upgrade.
+- **Reassigning resets the task.** When a task moves to another HR it goes back to Pending and the old note is cleared, because the new HR has not started.
+- **Sample data on startup.** If the database is empty the server loads sample tasks and interviews, so a reset on free hosting never leaves a blank dashboard.
 
-Use the frontend's exact origin for `CORS_ORIGINS` (scheme and hostname, no path or trailing slash). It accepts comma-separated origins if you need more than one. The app defaults to `*` when this variable is omitted; set it explicitly on a deployed service.
+## Run locally
 
-After deployment, check the backend URL in a browser. The root endpoint should return a JSON message, and `/docs` should show the API documentation.
+**Backend**
 
-### 2. Deploy the frontend static site
-
-Create a new **Static Site** from the same repository and configure:
-
-| Setting | Value |
-|---|---|
-| Root Directory | `frontend` |
-| Build Command | `npm ci && npm run build` |
-| Publish Directory | `dist` |
-
-Add this environment variable **before the first build**:
-
-| Name | Value |
-|---|---|
-| `VITE_API_URL` | The backend service URL, for example `https://your-backend.onrender.com` |
-
-Set the value to the backend base URL without a trailing slash. Vite embeds this value into the static build, so changing it requires a new frontend deployment/build. After the frontend has a URL, set the backend's `CORS_ORIGINS` to that frontend origin and redeploy the backend if needed.
-
-### Database persistence
-
-The default `DATABASE_URL` is `sqlite:///./salarite.db`, which stores the database relative to the backend working directory. Render's local filesystem is ephemeral by default, so data may be lost when the service restarts or redeploys.
-
-For a small demo that needs persistence, attach a persistent disk to the backend service, mount it at `/var/data`, and set:
-
-```text
-DATABASE_URL=sqlite:////var/data/salarite.db
+```bash
+cd backend
+python -m venv venv
+# Windows PowerShell
+.\venv\Scripts\Activate.ps1
+# Mac or Linux
+# source venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload
 ```
 
-The disk must be mounted on the backend web service. Without persistent storage, treat all database contents as temporary. The demo accounts will be seeded again after a restart.
+**Frontend** (new terminal)
 
-## API overview
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-All endpoints are documented in FastAPI's Swagger UI at `/docs`.
+Open http://localhost:5173. If the backend is elsewhere, create `frontend/.env` with `VITE_API_URL=http://localhost:8000`.
 
-| Method | Path | Purpose |
-|---|---|---|
-| `POST` | `/auth/login` | Sign in and receive a bearer token |
-| `POST` | `/auth/register` | Register an employer or HR account |
-| `GET` | `/auth/me` | Get the signed-in user |
-| `GET`, `POST` | `/tasks` | List or create tasks |
-| `PUT`, `PATCH`, `DELETE` | `/tasks/{task_id}` | Edit, update progress, or delete a task |
-| `GET`, `POST` | `/interviews` | List or schedule interviews |
-| `PATCH` | `/interviews/{interview_id}` | Update an interview status |
-| `POST` | `/interviews/{interview_id}/start` | Start the interview placeholder |
-| `GET` | `/users/hrs`, `/users/employers` | List accounts for task/interview forms |
+## API
 
-Protected API requests must include the login token in the `Authorization` header using the Bearer authentication scheme. Access to endpoints depends on the signed-in user's role.
+| Method | Path | Who | Purpose |
+|---|---|---|---|
+| POST | `/auth/register` | all | create an account |
+| POST | `/auth/login` | all | log in, returns a token |
+| GET | `/users/hrs` | employer | list HR accounts |
+| GET | `/users/employers` | hr | list employer accounts |
+| GET | `/tasks` | both | employer: tasks they gave. HR: tasks given to them |
+| POST | `/tasks` | employer | assign a task to an HR |
+| PUT | `/tasks/{id}` | employer | edit or reassign (not when completed) |
+| PATCH | `/tasks/{id}` | hr | update status and note |
+| DELETE | `/tasks/{id}` | employer | delete a task |
+| GET | `/interviews` | both | HR: their interviews. Employer: interviews for them |
+| POST | `/interviews` | hr | schedule an interview |
+| PATCH | `/interviews/{id}` | hr | change interview status |
+| POST | `/interviews/{id}/start` | hr | start the call placeholder |
 
-## Common deployment checks
+Protected routes need the header `Authorization: Bearer <token>`. Interactive docs are at `/docs`.
 
-- **Frontend cannot reach the API:** verify `VITE_API_URL` is the backend base URL, then rebuild/redeploy the static site.
-- **Browser reports a CORS error:** verify `CORS_ORIGINS` exactly matches the deployed frontend origin, then redeploy the backend.
-- **Render reports a failed build or startup:** inspect the relevant service's Render build and runtime logs; confirm the root directory and commands above.
-- **Data disappears after restart:** configure a persistent disk and point `DATABASE_URL` to a database file on its mount.
+## Deployment
+
+**Backend** (Render Web Service): root `backend`, build `pip install -r requirements.txt`, start `uvicorn main:app --host 0.0.0.0 --port $PORT`, env `PYTHON_VERSION=3.11.9`.
+
+**Frontend** (Render Static Site): root `frontend`, build `npm install && npm run build`, publish `dist`, env `VITE_API_URL=<backend URL>`.
+
+## Known limitations and next steps
+
+- **Calling is a placeholder.** A real voice, video or chat session would plug in at `/interviews/{id}/start` (WebRTC, Twilio or Daily.co).
+- **Data is not permanent on free hosting.** SQLite lives on a temporary disk, so a restart can erase new data. Sample data returns automatically. Production would use Postgres.
+- **Anyone can pick a role at signup.** A real product would let an admin assign roles.
+- **A task goes to one HR at a time**, and there is no email or push delivery for notifications yet.
