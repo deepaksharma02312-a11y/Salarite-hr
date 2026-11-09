@@ -7,7 +7,7 @@ import { useState } from "react";
  * Agar tumhare logo me "Salarite" naam pehle se likha hai to showText={false} kar do.
  */
 export default function Logo({ size = 38, light = false, showText = true }) {
-  const [useImage, setUseImage] = useState(true);
+  const [useImage, setUseImage] = useState(false);
 
   return (
     <span className={`logo ${light ? "light" : ""}`}>
